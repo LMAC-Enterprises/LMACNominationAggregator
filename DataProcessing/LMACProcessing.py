@@ -1,3 +1,4 @@
+import random
 import re
 from abc import ABC
 
@@ -20,6 +21,8 @@ class LMACContestMessagesProcessing(MessagesProcessingBase, ABC):
         self._hive = Hive()
 
     def processMessages(self, messages: list):
+        random.shuffle(messages)
+
         for message in messages:
             if self._compiledContestDelimiterPattern.match(message.content) is not None or 'Round ' in message.content:
                 return
