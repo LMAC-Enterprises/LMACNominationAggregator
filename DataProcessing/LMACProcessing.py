@@ -11,28 +11,25 @@ from DataProcessing.Processing import MessagesProcessingBase
 class LMACContestMessagesProcessing(MessagesProcessingBase, ABC):
     DEFAULT_IMAGE_URL: str = 'https://files.peakd.com/file/peakd-hive/quantumg/23tSh9ZCk2m46Yy9XQeQErkwL99fsdQjsxH9A6T4WKyi7BCDs3y4Q6pE3zMfDF4ggv5TS.png'
 
-    _generatedText: str
-
     def __init__(self, contestDelimiterPattern: str):
         self._compiledContestDelimiterPattern = re.compile(contestDelimiterPattern)
-        self._compiledPostLinkPattern = re.compile(r'https\:\/\/(?:peakd\.com|hive\.blog)\/[@a-z0-9_\-\/\.]+')
+        self._compiledPostLinkPattern = re.compile(r'https\:\/\/(?:peakd\.com|hive\.blog|ecency\.com)\/[@a-z0-9_\-\/\.]+')
         self._compiledAuthorPermPattern = re.compile(r'@([a-z0-9_\-\.]+)/([a-z0-9_\-\.\/]+)')
-        self._generatedText = ''
+        self._generatedTextList = []
         self._hive = Hive()
 
     def processMessages(self, messages: list):
-        random.shuffle(messages)
 
         for message in messages:
             if self._compiledContestDelimiterPattern.match(message.content) is not None or 'Round ' in message.content:
                 return
 
             for link in self._getLinks(message.content):
-                self._generatedText += '@{author}\n{url}\n{imageLink}\n\n'.format(
+                self._generatedTextList.append('@{author}\n{url}\n{imageLink}\n\n'.format(
                     author=link['author'],
                     url=link['url'],
                     imageLink=link['imageLink'],
-                )
+                ))
 
     def _getLinks(self, messageBody: str) -> list:
         matches = self._compiledPostLinkPattern.finditer(messageBody)
@@ -56,7 +53,9 @@ class LMACContestMessagesProcessing(MessagesProcessingBase, ABC):
         return links
 
     def getGeneratedText(self) -> str:
-        return self._generatedText
+        random.shuffle(self._generatedTextList)
+
+        return ''.join(self._generatedTextList)
 
     def _extractAuthorPerm(self, url: str):
         match = self._compiledAuthorPermPattern.findall(url)
