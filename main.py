@@ -3,6 +3,7 @@ import argparse
 import Configurations
 from DataProcessing.LMACProcessing import LMACContestMessagesProcessing
 from Network.Discord import DiscordBotClient
+from Services.AspectLogging import LogAspect
 
 
 class Main:
@@ -23,20 +24,28 @@ class Main:
 
     def _main(self, arguments: dict):
 
-        contestMessagesProcessor = LMACContestMessagesProcessing(
-            contestDelimiterPattern=Configurations.BaseConfiguration.discordRoundDelimiterMessagePattern
-        )
+        logger = LogAspect('BotMain')
+        logger.logger().info('Started processing.')
 
-        discordClient = DiscordBotClient(
-            sourceChannelId=Configurations.BaseConfiguration.discordSourceChannelId,
-            messageProcessor=contestMessagesProcessor,
-            sendMessage=Configurations.BaseConfiguration.discordFileMessageText,
-            filename=Configurations.BaseConfiguration.discordFilename,
-            simulate=arguments['simulate']
-        )
-        discordClient.run(Configurations.BaseConfiguration.discordBotToken)
-        # print(contestMessagesProcessor.getGeneratedText())
+        try:
+            contestMessagesProcessor = LMACContestMessagesProcessing(
+                contestDelimiterPattern=Configurations.BaseConfiguration.discordRoundDelimiterMessagePattern
+            )
 
+            discordClient = DiscordBotClient(
+                sourceChannelId=Configurations.BaseConfiguration.discordSourceChannelId,
+                messageProcessor=contestMessagesProcessor,
+                sendMessage=Configurations.BaseConfiguration.discordFileMessageText,
+                filename=Configurations.BaseConfiguration.discordFilename,
+                simulate=arguments['simulate']
+            )
+            discordClient.run(Configurations.BaseConfiguration.discordBotToken)
+            # print(contestMessagesProcessor.getGeneratedText())
+        except Exception as e:
+            logger.logger().error('Error ({message})'.format(message=str(e)))
+            return Main.EXITCODE_ERROR
+
+        logger.logger().info('Finished processing.')
 
         return Main.EXITCODE_OK
 
