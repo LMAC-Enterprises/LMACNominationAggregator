@@ -40,7 +40,6 @@ class Main:
                 simulate=arguments['simulate']
             )
             discordClient.run(Configurations.BaseConfiguration.discordBotToken)
-            # print(contestMessagesProcessor.getGeneratedText())
         except Exception as e:
             logger.logger().error('Error ({message})'.format(message=str(e)))
             return Main.EXITCODE_ERROR
