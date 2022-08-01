@@ -2,6 +2,7 @@ import discord as discord
 from discord import Intents, File
 
 from DataProcessing.Processing import MessagesProcessingBase
+from Services.AspectLogging import LogAspect
 
 
 class DiscordBotClient(discord.Client):
@@ -10,6 +11,7 @@ class DiscordBotClient(discord.Client):
     _filename: str
     _sendMessage: str
     _simulate: bool
+    _logger: LogAspect
 
     def __init__(self, sourceChannelId: int, messageProcessor: MessagesProcessingBase, sendMessage: str, filename: str, simulate: bool):
         super().__init__(intents=discord.Intents.default())
@@ -18,6 +20,7 @@ class DiscordBotClient(discord.Client):
         self._filename = filename
         self._sendMessage = sendMessage
         self._simulate = simulate
+        self._logger = LogAspect('DiscordClient')
 
     async def on_ready(self):
         channel = self.get_channel(self._sourceChannelId)
@@ -33,6 +36,7 @@ class DiscordBotClient(discord.Client):
     async def _onFinishAllBotOperations(self):
         textToSend = self._messageProcessor.getGeneratedText()
         if len(textToSend) == 0:
+            self._logger.logger().info('No links found.')
             return
 
         if self._simulate:
