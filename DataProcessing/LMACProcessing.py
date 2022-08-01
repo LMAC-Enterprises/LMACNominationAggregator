@@ -21,7 +21,7 @@ class LMACContestMessagesProcessing(MessagesProcessingBase, ABC):
     def processMessages(self, messages: list):
 
         for message in messages:
-            if self._compiledContestDelimiterPattern.match(message.content) is not None or 'Round ' in message.content:
+            if self._compiledContestDelimiterPattern.match(message.content) is not None:
                 return
 
             for link in self._getLinks(message.content):
