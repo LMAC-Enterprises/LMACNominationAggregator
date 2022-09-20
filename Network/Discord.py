@@ -14,7 +14,10 @@ class DiscordBotClient(discord.Client):
     _logger: LogAspect
 
     def __init__(self, sourceChannelId: int, messageProcessor: MessagesProcessingBase, sendMessage: str, filename: str, simulate: bool):
-        super().__init__(intents=discord.Intents.default())
+        intents = discord.Intents.default()
+        intents.messages = True
+        intents.message_content = True
+        super().__init__(intents=intents)
         self._sourceChannelId = sourceChannelId
         self._messageProcessor = messageProcessor
         self._filename = filename
@@ -24,7 +27,7 @@ class DiscordBotClient(discord.Client):
 
     async def on_ready(self):
         channel = self.get_channel(self._sourceChannelId)
-        messages = await channel.history(limit=25).flatten()
+        messages = [message async for message in channel.history(limit=25)]
 
         self._onChannelHistoryReceived(messages)
         await self._onFinishAllBotOperations()
